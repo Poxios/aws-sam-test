@@ -1,0 +1,62 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: "AWS::Serverless-2016-10-31"
+Description: test cyh
+
+Resources:
+  MyLambdaFunction1:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: app.lambda_handler
+      Runtime: python3.9
+      CodeUri: ./lambda1
+      MemorySize: 1024
+      Timeout: 10
+      DeadLetterQueue:
+        Type: SQS
+        TargetArn: arn:aws:sqs:ap-northeast-2:906389837735:dlq-test
+      Policies:
+        - arn:aws:iam::aws:policy/AWSLambda_FullAccess
+        - arn:aws:iam::aws:policy/AmazonElastiCacheFullAccess
+      VpcConfig:
+        SubnetIds:
+          - subnet-06cf32311f86b54c3
+        SecurityGroupIds:
+          - sg-02cd8b0e880e6a67a
+  MyLambdaFunction2:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: app.lambda_handler
+      Runtime: python3.9
+      CodeUri: ./lambda2
+      MemorySize: 10240
+      Timeout: 10
+      DeadLetterQueue:
+        Type: SQS
+        TargetArn: arn:aws:sqs:ap-northeast-2:906389837735:dlq-test
+      Policies:
+        - arn:aws:iam::aws:policy/AWSLambda_FullAccess
+        - arn:aws:iam::aws:policy/AmazonElastiCacheFullAccess
+      VpcConfig:
+        SubnetIds:
+          - subnet-06cf32311f86b54c3
+        SecurityGroupIds:
+          - sg-02cd8b0e880e6a67a
+  DLQLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: app.lambda_handler
+      Runtime: python3.9
+      CodeUri: ./DLQLambda
+      MemorySize: 512
+      Timeout: 10
+      DeadLetterQueue:
+        Type: SQS
+        TargetArn: arn:aws:sqs:ap-northeast-2:906389837735:dlq-test
+      Policies:
+        - arn:aws:iam::aws:policy/AmazonSNSFullAccess
+      Events:
+        MessageSqsDlEvent:
+          Type: SQS
+          Properties:
+            Queue: arn:aws:sqs:ap-northeast-2:906389837735:dlq-test
+            BatchSize: 1
